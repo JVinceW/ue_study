@@ -18,6 +18,12 @@ public:
 	// Sets default values for this actor's properties
 	AFloatingActor();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="FloatingActor")
+	float MovingSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="FloatingActor")
+	float RotatingSpeed;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
