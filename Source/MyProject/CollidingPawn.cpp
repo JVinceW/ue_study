@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "CollidingPawnMovementComponent.h"
 
 
 // Sets default values
@@ -33,17 +34,21 @@ ACollidingPawn::ACollidingPawn()
 	}
 
 	// Create Partical System
-	FirePartical = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MovePartical"));
-	FirePartical->SetupAttachment(SphereVisualMesh);
+	FireParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MovePartical"));
+	FireParticle->SetupAttachment(SphereVisualMesh);
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> FireParticleVisualAsset(TEXT("/Game/StarterContent/Particles/P_Fire.P_Fire"));
 	if (FireParticleVisualAsset.Succeeded())
 	{
-		FirePartical->SetTemplate(FireParticleVisualAsset.Object);
+		FireParticle->SetTemplate(FireParticleVisualAsset.Object);
 	}
 
 	InitSpringArm();
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
+	
+	// Create an instance of our movement component, and tell it to update the root.
+	CollidingPawnMovementComponent = CreateDefaultSubobject<UCollidingPawnMovementComponent>(TEXT("CustomMovementComponent"));
+	CollidingPawnMovementComponent->UpdatedComponent = RootComponent;
 }
 
 void ACollidingPawn::InitSpringArm()
@@ -78,6 +83,46 @@ void ACollidingPawn::Tick(float DeltaTime)
 void ACollidingPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	InputComponent->BindAction("ParticleToggle", IE_Pressed, this, &ACollidingPawn::ToggleParticle);
+	InputComponent->BindAxis("MoveForward", this, &ACollidingPawn::MoveForward);
+	InputComponent->BindAxis("MoveRight", this, &ACollidingPawn::MoveRight);
+	InputComponent->BindAxis("Turn", this, &ACollidingPawn::Turn);
 }
+
+UPawnMovementComponent* ACollidingPawn::GetMovementComponent() const
+{
+	return CollidingPawnMovementComponent;
+}
+
+void ACollidingPawn::MoveForward(float AxisValue)
+{
+	if (CollidingPawnMovementComponent && CollidingPawnMovementComponent->UpdatedComponent == RootComponent)
+	{
+		CollidingPawnMovementComponent->AddInputVector(GetActorForwardVector() * AxisValue);
+	}
+}
+
+void ACollidingPawn::MoveRight(float AxisValue)
+{
+	if (CollidingPawnMovementComponent && CollidingPawnMovementComponent->UpdatedComponent == RootComponent)
+    	{
+    		CollidingPawnMovementComponent->AddInputVector(GetActorRightVector() * AxisValue);
+    	}
+}
+
+void ACollidingPawn::Turn(float AxisValue)
+{
+	FRotator NewRotation = GetActorRotation();
+	NewRotation.Yaw += AxisValue;
+	SetActorRotation(NewRotation);
+}
+
+void ACollidingPawn::ToggleParticle()
+{
+	if (FireParticle && FireParticle->Template)
+	{
+		FireParticle->ToggleActive();
+	}
+}
+
 
