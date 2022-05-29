@@ -10,6 +10,7 @@
 #include "CollidingPawnMovementComponent.h"
 
 
+
 // Sets default values
 ACollidingPawn::ACollidingPawn()
 {
@@ -83,10 +84,14 @@ void ACollidingPawn::Tick(float DeltaTime)
 void ACollidingPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	InputComponent->BindAction("ParticleToggle", IE_Pressed, this, &ACollidingPawn::ToggleParticle);
-	InputComponent->BindAxis("MoveForward", this, &ACollidingPawn::MoveForward);
-	InputComponent->BindAxis("MoveRight", this, &ACollidingPawn::MoveRight);
-	InputComponent->BindAxis("Turn", this, &ACollidingPawn::Turn);
+	const FName InputParticleToggle = "ParticleToggle";
+	const FName InputMoveForward = "MoveForward";
+	const FName InputMoveRight = "MoveRight";
+	const FName InputTurn = "Turn";
+	InputComponent->BindAction(InputParticleToggle, IE_Pressed, this, &ACollidingPawn::ToggleParticle);
+	InputComponent->BindAxis(InputMoveForward, this, &ACollidingPawn::MoveForward);
+	InputComponent->BindAxis(InputMoveRight, this, &ACollidingPawn::MoveRight);
+	InputComponent->BindAxis(InputTurn, this, &ACollidingPawn::Turn);
 }
 
 UPawnMovementComponent* ACollidingPawn::GetMovementComponent() const
